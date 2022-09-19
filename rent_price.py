@@ -370,6 +370,27 @@ df.loc[df["Current_Floor"] == -2, "Floor Level"] = "Upper Basement"
 df.loc[df["Current_Floor"] == 0, "Floor Level"] = "Ground"
 
 
-df["Floor Level"].value_counts()
+df["Floor Level"].value_counts().sum()
 
 
+df.info()
+
+cat_cols = [col for col in df.columns if df[col].dtypes == "object"]
+num_cols = [col for col in df.columns if df[col].dtypes == "int64" and str(col) != "Rent"]
+
+for col in cat_cols:
+    print("Col name: " + str(col))
+    target_summary_with_cat(df, "Rent", col)
+
+
+for col in num_cols:
+    print("Col name: " + str(col))
+    target_summary_with_num(df, col, "Rent")
+
+df.drop(df.loc[df["Area Type"] == "Built Area", :].index, inplace=True)
+df.drop(df.loc[df["Point of Contact"] == "Contact Builder", :].index, inplace=True)
+
+house_rent_data.loc[df[df["Building Type"] == ""].index]
+
+## TODO: Understand why it floor level does not contain anything on these observation units
+len(house_rent_data.loc[df.loc[df["Floor Level"] == ""].index, "Floor"])
