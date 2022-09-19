@@ -9,12 +9,13 @@ import numpy as np
 import seaborn as sns
 import missingno as msno
 import matplotlib
+matplotlib.use("Qt5Agg")
 from matplotlib import pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 from sklearn.feature_selection import mutual_info_regression
 from sklearn.preprocessing import MinMaxScaler, LabelEncoder, StandardScaler, RobustScaler
 
-matplotlib.use("Qt5Agg")
+
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 170)
 pd.set_option('display.max_rows', None)
@@ -354,8 +355,21 @@ df.groupby("Building Type").size()
 df["Current_Floor"] = pd.to_numeric(df["Current_Floor"], errors="coerce")
 df["Floor Level"] = ""
 
-## Take a look at this one
-df.loc[df["Current_Floor"] > 0, "Floor Level"] = (df.loc[df["Current_Floor"] > 0, "Max_Level"]) - (df.loc[df["Current_Floor"] > 0, "Current_Floor"])
+## Thought about taking the difference between max_level and current_floor however
+## it may not be representative of how high the floor is (e.g. if I live at 25th floor and max_level is 25 also
+## the diff will be 0 which may result in incorrect classification. So, I only consider the "current_floor"
+
+df.loc[(df["Current_Floor"] > 0) & (df["Current_Floor"] < 4), "Floor Level"] = "Low"
+df.loc[(df["Current_Floor"] > 4) & (df["Current_Floor"] < 8), "Floor Level"] = "Mid"
+df.loc[(df["Current_Floor"] > 8) & (df["Current_Floor"] < 15), "Floor Level"] = "High"
+df.loc[df["Current_Floor"] > 15, "Floor Level"] = "Residence"
+
+
+df.loc[df["Current_Floor"] == -1, "Floor Level"] = "Lower Basement"
+df.loc[df["Current_Floor"] == -2, "Floor Level"] = "Upper Basement"
+df.loc[df["Current_Floor"] == 0, "Floor Level"] = "Ground"
+
 
 df["Floor Level"].value_counts()
+
 
