@@ -258,3 +258,60 @@ df = house_rent_data.copy()
 # Point of Contact: Whom should you contact for more information regarding the Houses/Apartments/Flats.
 
 check_df(df)
+
+df.columns
+
+# Formatting the date column to proper type
+df["Posted On"] = pd.to_datetime(df["Posted On"], format="%Y/%m/%d")
+
+df["Posted Month"] = df["Posted On"].dt.month
+
+df["Posted Month"].value_counts()
+
+df.drop("Area Locality", axis=1, inplace=True)
+
+df["Floor"] = df["Floor"].apply(lambda x: x.replace("out of", "/"))
+df["Floor"] = df["Floor"].apply(lambda x: x.replace("Ground", "0"))
+df["Floor"] = df["Floor"].apply(lambda x: x.replace("Lower Basement", "-1"))
+df["Floor"] = df["Floor"].apply(lambda x: x.replace("Upper Basement", "-2"))
+df["Floor"] = df["Floor"].apply(lambda x: x.replace(" ", ""))
+df[["Floor_Level", "Max_Level"]] = df["Floor"].str.split("/", expand=True)
+df.drop("Floor", axis=1, inplace=True)
+
+# df["Size_In_Sq_Meter"] = df["Size"].apply(lambda x: x / 10.764)
+
+df.info()
+
+cat_cols = [col for col in df.columns if df[col].dtypes == "object"]
+num_cols = [col for col in df.columns if df[col].dtypes == "int64" and str(col) != "Rent"]
+
+for col in cat_cols:
+    print("Col name: " + str(col))
+    target_summary_with_cat(df, "Rent", col)
+
+
+for col in num_cols:
+    print("Col name: " + str(col))
+    target_summary_with_num(df, col, "Rent")
+
+for col in num_cols:
+    plt.figure(figsize=(9, 6))
+    g = sns.distplot(x=df[col], kde=False, color="orange", hist_kws=dict(edgecolor="black", linewidth=2))
+    g.set_title("Variable: " + str(col))
+    g.xaxis.set_minor_locator(AutoMinorLocator(2))
+    g.yaxis.set_minor_locator(AutoMinorLocator(2))
+    g.tick_params(which="both", width=2)
+    g.tick_params(which="major", length=7)
+    g.tick_params(which="minor", length=4)
+    plt.show()
+
+plt.figure(figsize=(9, 6))
+g = sns.distplot(x=df["Rent"], kde=False, color="green", hist_kws=dict(edgecolor="black", linewidth=2))
+g.set_title("Rent")
+g.xaxis.set_minor_locator(AutoMinorLocator(2))
+g.yaxis.set_minor_locator(AutoMinorLocator(2))
+g.tick_params(which="both", width=2)
+g.tick_params(which="major", length=7)
+g.tick_params(which="minor", length=4)
+plt.show()
+
