@@ -275,7 +275,7 @@ df["Floor"] = df["Floor"].apply(lambda x: x.replace("Ground", "0"))
 df["Floor"] = df["Floor"].apply(lambda x: x.replace("Lower Basement", "-1"))
 df["Floor"] = df["Floor"].apply(lambda x: x.replace("Upper Basement", "-2"))
 df["Floor"] = df["Floor"].apply(lambda x: x.replace(" ", ""))
-df[["Floor_Level", "Max_Level"]] = df["Floor"].str.split("/", expand=True)
+df[["Current_Floor", "Max_Level"]] = df["Floor"].str.split("/", expand=True)
 df.drop("Floor", axis=1, inplace=True)
 
 # df["Size_In_Sq_Meter"] = df["Size"].apply(lambda x: x / 10.764)
@@ -314,4 +314,48 @@ g.tick_params(which="both", width=2)
 g.tick_params(which="major", length=7)
 g.tick_params(which="minor", length=4)
 plt.show()
+
+# Size and Rent
+plt.figure(figsize=(9, 6))
+g = sns.distplot(x=np.log1p(df["Rent"]), kde=False, color="green", hist_kws=dict(edgecolor="black", linewidth=2))
+g.set_title("Rent")
+g.xaxis.set_minor_locator(AutoMinorLocator(2))
+g.yaxis.set_minor_locator(AutoMinorLocator(2))
+g.tick_params(which="both", width=2)
+g.tick_params(which="major", length=7)
+g.tick_params(which="minor", length=4)
+plt.show()
+
+plt.figure(figsize=(9, 6))
+g = sns.distplot(x=np.log1p(df["Size"]), kde=False, color="green", hist_kws=dict(edgecolor="black", linewidth=2))
+g.set_title("Size")
+g.xaxis.set_minor_locator(AutoMinorLocator(2))
+g.yaxis.set_minor_locator(AutoMinorLocator(2))
+g.tick_params(which="both", width=2)
+g.tick_params(which="major", length=7)
+g.tick_params(which="minor", length=4)
+plt.show()
+
+df["Log_Size"] = np.log1p(df["Size"])
+df["Log_Rent"] = np.log1p(df["Rent"])
+
+df.info()
+
+df["Max_Level"] = pd.to_numeric(df["Max_Level"], errors="coerce")
+df["Building Type"] = ""
+
+df.loc[df["Max_Level"] == 1, "Building Type"] = "detached"
+df.loc[(df["Max_Level"] > 1) & (df["Max_Level"] <= 5), "Building Type"] = "normal"
+df.loc[(df["Max_Level"] > 5) & (df["Max_Level"] <= 11), "Building Type"] = "big"
+df.loc[(df["Max_Level"] > 11), "Building Type"] = "residence"
+
+df.groupby("Building Type").size()
+
+df["Current_Floor"] = pd.to_numeric(df["Current_Floor"], errors="coerce")
+df["Floor Level"] = ""
+
+## Take a look at this one
+df.loc[df["Current_Floor"] > 0, "Floor Level"] = (df.loc[df["Current_Floor"] > 0, "Max_Level"]) - (df.loc[df["Current_Floor"] > 0, "Current_Floor"])
+
+df["Floor Level"].value_counts()
 
