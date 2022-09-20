@@ -21,15 +21,6 @@ pd.set_option('display.width', 170)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
-# from sklearn.linear_model import LinearRegression, LogisticRegression
-# from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier, export_graphviz, export_text
-# from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, RandomForestClassifier, GradientBoostingClassifier
-# from xgboost import XGBRegressor, XGBClassifier
-# from lightgbm import LGBMRegressor, LGBMClassifier
-# from catboost import CatBoostRegressor, CatBoostClassifier
-# from sklearn.model_selection import GridSearchCV, cross_val_score, cross_validate, RandomizedSearchCV, validation_curve, train_test_split
-# from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
-
 ###################
 # FUNCTIONS
 ###################
@@ -422,3 +413,31 @@ len(df.loc[df["Rent"] > 12.5, :].index) / len(df)
 df.drop(df.loc[df["Rent"] < 8, :].index, inplace=True)
 df.drop(df.loc[df["Rent"] > 12.5, :].index, inplace=True)
 
+plt.figure(figsize=(9, 6))
+g = sns.scatterplot(x=df["Max_Level"], y=df["Rent"], color="blue", edgecolor="black")
+g.set_title("Rent vs Current_Floor")
+g.xaxis.set_minor_locator(AutoMinorLocator(2))
+g.yaxis.set_minor_locator(AutoMinorLocator(2))
+g.tick_params(which="both", width=2)
+g.tick_params(which="major", length=7)
+g.tick_params(which="minor", length=4)
+plt.show(block=True)
+
+# There is one more thing that can be done before going into modelling and that is to check interactions.
+# Maybe max_level and current_floor might be interactive because of what I have stated above.
+
+df["Max_Current_Level_Ratio"] = df["Max_Level"] / df["Current_Floor"]
+
+
+###################
+# MODELLING
+###################
+
+# from sklearn.linear_model import LinearRegression
+# from sklearn.tree import DecisionTreeRegressor export_graphviz, export_text
+# from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor,
+# from xgboost import XGBRegressor
+# from lightgbm import LGBMRegressor
+# from catboost import CatBoostRegressor
+# from sklearn.model_selection import GridSearchCV, cross_val_score, cross_validate, RandomizedSearchCV, validation_curve, train_test_split
+# from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
