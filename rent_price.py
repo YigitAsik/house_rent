@@ -423,21 +423,40 @@ g.tick_params(which="major", length=7)
 g.tick_params(which="minor", length=4)
 plt.show(block=True)
 
-# There is one more thing that can be done before going into modelling and that is to check interactions.
-# Maybe max_level and current_floor might be interactive because of what I have stated above.
+# Maybe max_level and current_floor might be interactive because of what I have stated above while handling
+# the "current floor"
 
 df["Max_Current_Level_Ratio"] = df["Max_Level"] / df["Current_Floor"]
 
-
+## One Hot Encoding
+cat_cols, num_cols, cat_but_car = grab_col_names(df)
+df = one_hot_encoder(df, cat_cols, drop_first=True)
 ###################
 # MODELLING
 ###################
 
-# from sklearn.linear_model import LinearRegression
-# from sklearn.tree import DecisionTreeRegressor export_graphviz, export_text
-# from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor,
-# from xgboost import XGBRegressor
-# from lightgbm import LGBMRegressor
-# from catboost import CatBoostRegressor
-# from sklearn.model_selection import GridSearchCV, cross_val_score, cross_validate, RandomizedSearchCV, validation_curve, train_test_split
-# from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
+from sklearn.linear_model import LinearRegression
+from sklearn.tree import DecisionTreeRegressor, export_graphviz, export_text
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from xgboost import XGBRegressor
+from lightgbm import LGBMRegressor
+from catboost import CatBoostRegressor
+from sklearn.model_selection import GridSearchCV, cross_val_score, cross_validate
+
+df.info()
+X = df.drop(["Posted On", "Rent"], axis=1)
+y = np.expm1(df["Rent"])
+
+## When the model is deployed, we can predict a single value as logarithmic then apply exponential transformation
+
+lgbm = LGBMRegressor(random_state=42)
+
+np.mean(np.sqrt(-cross_val_score(lgbm,
+                                 X,
+                                 y,
+                                 cv=5,
+                                 scoring="neg_mean_squared_error")))
+
+y.describe([.01, .05, .15, .25, .50, .75, .85, .95, .99]))
+
+###################################
