@@ -267,8 +267,6 @@ df["Posted On"] = pd.to_datetime(df["Posted On"], format="%Y/%m/%d")
 
 df["Posted Month"] = df["Posted On"].dt.month
 
-df["Posted Month"].value_counts()
-
 df.drop("Area Locality", axis=1, inplace=True)
 
 df["Floor"] = df["Floor"].apply(lambda x: x.replace("out of", "/"))
@@ -316,30 +314,6 @@ g.tick_params(which="major", length=7)
 g.tick_params(which="minor", length=4)
 plt.show()
 
-# Size and Rent
-plt.figure(figsize=(9, 6))
-g = sns.distplot(x=np.log1p(df["Rent"]), kde=False, color="green", hist_kws=dict(edgecolor="black", linewidth=2))
-g.set_title("Rent")
-g.xaxis.set_minor_locator(AutoMinorLocator(2))
-g.yaxis.set_minor_locator(AutoMinorLocator(2))
-g.tick_params(which="both", width=2)
-g.tick_params(which="major", length=7)
-g.tick_params(which="minor", length=4)
-plt.show()
-
-plt.figure(figsize=(9, 6))
-g = sns.distplot(x=np.log1p(df["Size"]), kde=False, color="green", hist_kws=dict(edgecolor="black", linewidth=2))
-g.set_title("Size")
-g.xaxis.set_minor_locator(AutoMinorLocator(2))
-g.yaxis.set_minor_locator(AutoMinorLocator(2))
-g.tick_params(which="both", width=2)
-g.tick_params(which="major", length=7)
-g.tick_params(which="minor", length=4)
-plt.show()
-
-df["Log_Size"] = np.log1p(df["Size"])
-df["Log_Rent"] = np.log1p(df["Rent"])
-
 df.info()
 
 df["Max_Level"] = pd.to_numeric(df["Max_Level"], errors="coerce")
@@ -359,10 +333,12 @@ df["Floor Level"] = ""
 ## it may not be representative of how high the floor is (e.g. if I live at 25th floor and max_level is 25 also
 ## the diff will be 0 which may result in incorrect classification. So, I only consider the "current_floor"
 
+df["Current_Floor"].value_counts()
+
 df.loc[(df["Current_Floor"] > 0) & (df["Current_Floor"] < 4), "Floor Level"] = "Low"
-df.loc[(df["Current_Floor"] > 4) & (df["Current_Floor"] < 8), "Floor Level"] = "Mid"
-df.loc[(df["Current_Floor"] > 8) & (df["Current_Floor"] < 15), "Floor Level"] = "High"
-df.loc[df["Current_Floor"] > 15, "Floor Level"] = "Residence"
+df.loc[(df["Current_Floor"] >= 4) & (df["Current_Floor"] < 8), "Floor Level"] = "Mid"
+df.loc[(df["Current_Floor"] >= 8) & (df["Current_Floor"] < 15), "Floor Level"] = "High"
+df.loc[df["Current_Floor"] >= 15, "Floor Level"] = "Residence"
 
 
 df.loc[df["Current_Floor"] == -1, "Floor Level"] = "Lower Basement"
@@ -389,8 +365,60 @@ for col in num_cols:
 
 df.drop(df.loc[df["Area Type"] == "Built Area", :].index, inplace=True)
 df.drop(df.loc[df["Point of Contact"] == "Contact Builder", :].index, inplace=True)
+df.drop(df.loc[df["Building Type"] == "", :].index, inplace=True)
+df.drop(df.loc[df["Floor Level"] == "Lower Basement", :].index, inplace=True)
+df.drop(df.loc[df["Floor Level"] == "Upper Basement", :].index, inplace=True)
 
-house_rent_data.loc[df[df["Building Type"] == ""].index]
+df.head()
 
-## TODO: Understand why it floor level does not contain anything on these observation units
-len(house_rent_data.loc[df.loc[df["Floor Level"] == ""].index, "Floor"])
+plt.figure(figsize=(9, 6))
+g = sns.distplot(x=np.log1p(df["Rent"]), kde=False, color="green", hist_kws=dict(edgecolor="black", linewidth=2))
+g.set_title("Rent")
+g.xaxis.set_minor_locator(AutoMinorLocator(2))
+g.yaxis.set_minor_locator(AutoMinorLocator(2))
+g.tick_params(which="both", width=2)
+g.tick_params(which="major", length=7)
+g.tick_params(which="minor", length=4)
+plt.show(block=True)
+
+df.info()
+
+plt.figure(figsize=(9, 6))
+g = sns.distplot(x=np.log1p(df["Size"]), kde=False, color="green", hist_kws=dict(edgecolor="black", linewidth=2))
+g.set_title("Size")
+g.xaxis.set_minor_locator(AutoMinorLocator(2))
+g.yaxis.set_minor_locator(AutoMinorLocator(2))
+g.tick_params(which="both", width=2)
+g.tick_params(which="major", length=7)
+g.tick_params(which="minor", length=4)
+plt.show(block=True)
+
+
+df["Rent"] = np.log1p(df["Rent"])
+df["Size"] = np.log1p(df["Size"])
+
+df["Rent"]
+
+
+np.log1p(df["Size"]).describe([0.05, 0.25, 0.50, 0.75, 0.95, 0.99]).T
+
+len(df.loc[df["Size"] <= 5.5, :].index) / len(df)
+
+df.drop(df.loc[df["Size"] <= 5.5, :].index, inplace=True)
+
+plt.figure(figsize=(9, 6))
+g = sns.distplot(x=df["Rent"], kde=False, color="green", hist_kws=dict(edgecolor="black", linewidth=2))
+g.set_title("Rent")
+g.xaxis.set_minor_locator(AutoMinorLocator(2))
+g.yaxis.set_minor_locator(AutoMinorLocator(2))
+g.tick_params(which="both", width=2)
+g.tick_params(which="major", length=7)
+g.tick_params(which="minor", length=4)
+plt.show(block=True)
+
+len(df.loc[df["Rent"] < 8, :].index) / len(df)
+len(df.loc[df["Rent"] > 12.5, :].index) / len(df)
+
+df.drop(df.loc[df["Rent"] < 8, :].index, inplace=True)
+df.drop(df.loc[df["Rent"] > 12.5, :].index, inplace=True)
+
